@@ -1,32 +1,39 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import phonebook from './server/phonebook'
 
-const Persons = ({ persons }) => {
+const Persons = ({ persons, handleRemove }) => {
   return (
     <div>
-      {persons.map((person) => (<PersonEntry key={person.id} person={person}/>))}
+      {persons.map((person) => (<PersonEntry key={person.id} person={person} handleRemove={handleRemove}/>))}
     </div>
   )
 }
 
-const PersonEntry = ({ person }) => {
+const PersonEntry = ({ person, handleRemove }) => {
   return (
-    <p>{person.name} {person.number}</p>
+    <div>
+      <p>{person.name} {person.number}</p>
+      <button onClick={() => handleRemove(person.id)}>delete</button>
+    </div>
   )
 } 
 
 const PersonForm = ({ newName, newNumber, addPerson, handleNameChange, handleNumberChange }) => {
-  <form onSubmit={addPerson}>
-    <div>
-      name: <input value={newName} onChange={handleNameChange}/>
-    </div>
-    <div>
-      number: <input value={newNumber} onChange={handleNumberChange}/>
-    </div>
-    <div>
-      <button type="submit">add</button>
-    </div>
-  </form>
+  return (
+    <form onSubmit={addPerson}>
+      <div>
+        name: <input value={newName} onChange={handleNameChange}/>
+      </div>
+      <div>
+        number: <input value={newNumber} onChange={handleNumberChange}/>
+      </div>
+      <div>
+        <button type="submit">add</button>
+      </div>
+    </form>
+  )
 }
+
 const Filter = ({ filter, handleFilterChange }) => {
   return (
     <div>
@@ -36,29 +43,49 @@ const Filter = ({ filter, handleFilterChange }) => {
 }
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
 
+  useEffect(() => {
+    phonebook.getAll().then(response => {
+      setPersons(response.data)
+    })
+  }, [])
+
   const addPerson = (event) => {
-    event.preventDefault()
-    if (persons.find((person) => person.name === newName)) {
-      window.alert(`${newName} is already in this phonebook`)
-      return
-    }
+    event.preventDefault()    
     const personObj = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1
+      id: (persons.length + 1).toString()
     }
-    const newPhoneBook = persons.concat(personObj)
-    setPersons(newPhoneBook)
+
+    if (persons.find((person) => person.name === newName)) {
+      const updatePerson = persons.find((person) => person.name === newName)
+      if (window.confirm(`${newName} is already in this phonebook. Would you like to update their number?`)) {
+        phonebook.update(updatePerson.id, personObj)
+          .then((response) => {
+            console.log("In update", response)
+            setPersons(persons.map(person => person.id === updatePerson.id ? response.data : person))
+          })
+          .catch(error => console.error(error))
+        return
+      }
+      return
+    }
+
+    phonebook.create(personObj)
+      .then((response) => {
+        const newPhoneBook = persons.concat(response.data)
+        setPersons(newPhoneBook)
+        setNewName("")
+        setNewNumber("")
+      })
+      .catch(error => {
+        console.error(error)
+      })    
   }
 
   const handleNameChange = (event) => {
@@ -71,6 +98,14 @@ const App = () => {
 
   const handleFilterChange = (event) => {
     setFilter(event.target.value)
+  }
+
+  const handleRemove = (id) => {
+    if (window.confirm("Are you sure you want to remove this person?")) {
+      phonebook.remove(id)
+        .then(() => setPersons(persons.filter(person => person.id !== id)))
+        .catch(error => console.error(error))
+    } 
   }
 
   const personsToShow = filter === '' 
@@ -90,7 +125,7 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={personsToShow} />
+      <Persons persons={personsToShow} handleRemove={handleRemove} />
     </div>
   )
 }
