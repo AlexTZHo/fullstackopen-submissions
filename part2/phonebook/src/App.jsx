@@ -1,52 +1,17 @@
 import { useState, useEffect } from 'react'
 import phonebook from './server/phonebook'
-
-const Persons = ({ persons, handleRemove }) => {
-  return (
-    <div>
-      {persons.map((person) => (<PersonEntry key={person.id} person={person} handleRemove={handleRemove}/>))}
-    </div>
-  )
-}
-
-const PersonEntry = ({ person, handleRemove }) => {
-  return (
-    <div>
-      <p>{person.name} {person.number}</p>
-      <button onClick={() => handleRemove(person.id)}>delete</button>
-    </div>
-  )
-} 
-
-const PersonForm = ({ newName, newNumber, addPerson, handleNameChange, handleNumberChange }) => {
-  return (
-    <form onSubmit={addPerson}>
-      <div>
-        name: <input value={newName} onChange={handleNameChange}/>
-      </div>
-      <div>
-        number: <input value={newNumber} onChange={handleNumberChange}/>
-      </div>
-      <div>
-        <button type="submit">add</button>
-      </div>
-    </form>
-  )
-}
-
-const Filter = ({ filter, handleFilterChange }) => {
-  return (
-    <div>
-        filter shown with <input value={filter} onChange={handleFilterChange}/>
-    </div>
-  )
-}
+import PersonForm from './components/PersonForm'
+import Persons from './components/Persons'
+import Filter from './components/Filter'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [notificationColor, setNotificationColor] = useState('red')
 
   useEffect(() => {
     phonebook.getAll().then(response => {
@@ -69,8 +34,20 @@ const App = () => {
           .then((response) => {
             console.log("In update", response)
             setPersons(persons.map(person => person.id === updatePerson.id ? response.data : person))
+            setErrorMessage(`Updated ${personObj.name}`)
+            setNotificationColor('green')
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
           })
-          .catch(error => console.error(error))
+          .catch(error => {
+            console.error(error)
+            setErrorMessage("Error occurred while updating")
+            setNotificationColor('red')
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+          })
         return
       }
       return
@@ -80,11 +57,21 @@ const App = () => {
       .then((response) => {
         const newPhoneBook = persons.concat(response.data)
         setPersons(newPhoneBook)
+        setErrorMessage(`Added ${personObj.name}`)
+        setNotificationColor('green')
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
         setNewName("")
         setNewNumber("")
       })
       .catch(error => {
         console.error(error)
+        setErrorMessage("Error occurred while adding")
+        setNotificationColor('red')
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
       })    
   }
 
@@ -101,10 +88,22 @@ const App = () => {
   }
 
   const handleRemove = (id) => {
-    if (window.confirm("Are you sure you want to remove this person?")) {
+    if (window.confirm("Are you sure you want to remove this person?")) {          
+      const person = persons.find(person => person.id === id)
       phonebook.remove(id)
-        .then(() => setPersons(persons.filter(person => person.id !== id)))
-        .catch(error => console.error(error))
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id))
+          setErrorMessage(`Removed ${person.name}`)
+          setNotificationColor('green')
+        })
+        .catch(error => {
+          console.error(error)
+          setErrorMessage(`Information for ${person.name} has already been removed`)
+          setNotificationColor('red')
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+        })
     } 
   }
 
@@ -115,6 +114,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification className='error' message={errorMessage} color={notificationColor}/>
       <Filter filter={filter} handleFilterChange={handleFilterChange}/>
       <h2>add a new</h2>
       <PersonForm 
