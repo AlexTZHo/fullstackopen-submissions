@@ -41,8 +41,8 @@ const App = () => {
             }, 5000)
           })
           .catch(error => {
-            console.error(error)
-            setErrorMessage("Error occurred while updating")
+            console.error(error.response.data.error)
+            setErrorMessage(error.response.data.error)
             setNotificationColor('red')
             setTimeout(() => {
               setErrorMessage(null)
