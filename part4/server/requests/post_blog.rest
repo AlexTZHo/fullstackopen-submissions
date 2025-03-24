@@ -1,0 +1,9 @@
+POST http://localhost:3001/api/blogs HTTP/1.1
+content-type: application/json
+
+{
+    "title": "Who Goes There",
+    "author": "Cole Domingo",
+    "url": "www.tt.com",
+    "likes": "5"
+}

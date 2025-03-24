@@ -1,0 +1,30 @@
+{
+  "name": "blog-list-app",
+  "version": "1.0.0",
+  "description": "part4",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "test": "node --test",
+    "build:ui": "rm -rf build && cd ../frontend/ && npm run build && cp -r build ../backend",
+    "deploy": "fly deploy",
+    "deploy:full": "npm run build:ui && npm run deploy",
+    "logs:prod": "fly logs",
+    "lint": "eslint ."
+  },
+  "author": "Alex Ho",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "@stylistic/eslint-plugin-js": "^4.2.0",
+    "eslint": "^9.23.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.12.2",
+    "morgan": "^1.10.0"
+  }
+}
