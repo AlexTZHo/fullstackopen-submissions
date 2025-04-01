@@ -4,8 +4,9 @@
   "description": "part4",
   "main": "index.js",
   "scripts": {
-    "dev": "node --watch index.js",
-    "test": "node --test",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "dev": "cross-env NODE_ENV=development node --watch index.js",
+    "test": "cross-env NODE_ENV=test node --test",
     "build:ui": "rm -rf build && cd ../frontend/ && npm run build && cp -r build ../backend",
     "deploy": "fly deploy",
     "deploy:full": "npm run build:ui && npm run deploy",
@@ -20,9 +21,11 @@
     "eslint": "^9.23.0"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
     "mongodb": "^6.15.0",
     "mongoose": "^8.12.2",
     "morgan": "^1.10.0"
