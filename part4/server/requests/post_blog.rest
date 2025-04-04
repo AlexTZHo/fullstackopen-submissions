@@ -1,9 +1,11 @@
 POST http://localhost:3001/api/blogs HTTP/1.1
 content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1sdXVra2FpIiwiaWQiOiI2N2YwMTQ5Y2NjNjYzYjU4ZDU2OWQ5YmEiLCJpYXQiOjE3NDM3OTE4ODEsImV4cCI6MTc0Mzc5NTQ4MX0.JPaijWgNAlheIyU9CSJmmfrA99384_ztOfYHv4BF6Co
 
 {
-    "title": "Who Goes There",
-    "author": "Cole Domingo",
+    "title": "It's Me",
+    "author": "Matti Luukkainen",
     "url": "www.tt.com",
-    "likes": "5"
+    "likes": "5",
+    "userId": "67f010aee716e539bbb5418d"
 }
